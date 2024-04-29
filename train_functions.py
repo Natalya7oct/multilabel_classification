@@ -446,7 +446,7 @@ def main(args, dataset_path):
   print('Number of parameters: {:.5f} '.format(params))
 
   args.optimizer = optim.AdamW(model.parameters(), lr=args.lr)
-  args.scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=args.lr_patience, verbose=True, factor=args.lr_factor)
+  args.scheduler = optim.lr_scheduler.ReduceLROnPlateau(args.optimizer, 'max', patience=args.lr_patience, verbose=True, factor=args.lr_factor)
   torch.save(args, os.path.join(args.savedir_multimodal, 'args.pt'))
   model_train(model, args, criterion, args.savedir_multimodal)
   load_checkpoint(model, os.path.join(args.savedir_multimodal, 'model_best.pt'))
