@@ -232,7 +232,7 @@ def model_eval(i_epoch, data, model, args, criterion):
 
     return metrics
 
-def model_train(model, args, criterion, savedir):
+def model_train(model, optimizer, args, criterion, savedir):
 
   start_epoch, global_step, n_no_improve, best_metric = 0, 0, 0, -np.inf
 
@@ -445,7 +445,7 @@ def main(args, dataset_path):
   optimizer = optim.AdamW(model.parameters(), lr=args.lr)
   scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=args.lr_patience, verbose=True, factor=args.lr_factor)
   torch.save(args, os.path.join(args.savedir_multimodal, 'args.pt'))
-  model_train(model, args, criterion, args.savedir_multimodal)
+  model_train(model, optimizer, args, criterion, args.savedir_multimodal)
   load_checkpoint(model, os.path.join(args.savedir_multimodal, 'model_best.pt'))
   model.eval()
   test_metrics = model_eval(np.inf, test_loader, model, args, criterion)
@@ -465,7 +465,7 @@ def main(args, dataset_path):
   optimizer = optim.AdamW(model.parameters(), lr=args.lr)
   scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=args.lr_patience, verbose=True, factor=args.lr_factor)
   torch.save(args, os.path.join(args.savedir_text, 'args.pt'))
-  model_train(model, args, criterion, args.savedir_text)
+  model_train(model, optimizer, args, criterion, args.savedir_text)
   load_checkpoint(model, os.path.join(args.savedir_text, 'model_best.pt'))
   model.eval()
   test_metrics = model_eval(np.inf, test_loader, model, args, criterion)
@@ -486,7 +486,7 @@ def main(args, dataset_path):
   optimizer = optim.AdamW(model.parameters(), lr=args.lr)
   scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=args.lr_patience, verbose=True, factor=args.lr_factor)
   torch.save(args, os.path.join(args.savedir_image, 'args.pt'))
-  model_train(model, args, criterion, args.savedir_image)
+  model_train(model, optimizer, args, criterion, args.savedir_image)
   load_checkpoint(model, os.path.join(args.savedir_image, 'model_best.pt'))
   model.eval()
   test_metrics = model_eval(np.inf, test_loader, model, args, criterion)
