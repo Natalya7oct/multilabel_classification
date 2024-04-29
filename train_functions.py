@@ -364,7 +364,7 @@ def main(args, dataset_path):
           self.txtenc = BertEncoder(args)
           self.imgenc = ImageEncoder(args)
 
-          last_size = args.hidden_sz + (args.img_hidden_sz * args.num_image_embeds)
+          last_size = args.text_hidden_sz + (args.img_hidden_sz * args.num_image_embeds)
           self.clf = nn.ModuleList()
 
           self.clf.append(nn.Linear(last_size, args.linear_layer_dim))
@@ -388,7 +388,7 @@ def main(args, dataset_path):
           self.txtenc = BertEncoder(args)
           self.imgenc = ImageEncoder(args)
 
-          last_size = args.hidden_sz
+          last_size = args.text_hidden_sz
           self.clf = nn.ModuleList()
 
           self.clf.append(nn.Linear(last_size, args.linear_layer_dim))
