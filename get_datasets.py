@@ -63,8 +63,7 @@ def write_formated_data_coco(args, captions, instances):
   data = data.reset_index(drop=True)
 
   lines = []
-  #for i in tqdm(range(len(data))):
-  for i in tqdm(range(1000)):
+  for i in tqdm(range(len(data))):
     try:
       img = requests.get(data.coco_url[i]).content
       with open(f'''{args.data_path_coco}/dataset/''' + f'''{data['coco_url'][i][38:]}''', 'wb') as handler:
