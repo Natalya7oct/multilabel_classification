@@ -196,7 +196,7 @@ def load_checkpoint(model, path):
     best_checkpoint = torch.load(path)
     model.load_state_dict(best_checkpoint['state_dict'])
 
-def model_eval(i_epoch, data, model, args, criterion):
+def model_eval(i_epoch, data, model, args):
     with torch.no_grad():
         losses, preds, tgts = [], [], []
         for batch in data:
@@ -207,7 +207,7 @@ def model_eval(i_epoch, data, model, args, criterion):
             tgt = tgt.cuda()
 
             out = model(txt, mask, segment, img)
-            loss = criterion(out, tgt)
+            loss = args.criterion(out, tgt)
             losses.append(loss.item())
 
             pred = torch.sigmoid(out).cpu().detach().numpy()
@@ -232,10 +232,11 @@ def model_eval(i_epoch, data, model, args, criterion):
 
     return metrics
 
-def model_train(model, args, criterion, savedir):
+def model_train(model, args, savedir):
 
   optimizer = args.optimizer
   scheduler = args.scheduler
+  criterion = args.criterion
 
   start_epoch, global_step, n_no_improve, best_metric = 0, 0, 0, -np.inf
 
@@ -264,7 +265,7 @@ def model_train(model, args, criterion, savedir):
               optimizer.zero_grad()
 
       model.eval()
-      metrics = model_eval(i_epoch, args.val_loader, model, args, criterion)
+      metrics = model_eval(i_epoch, args.val_loader, model, args)
       epoch_train_losses.append(np.mean(train_losses))
       epoch_val_losses.append(metrics['loss'])
       print('Epoch:', i_epoch)
@@ -448,10 +449,10 @@ def main(args, dataset_path):
   args.optimizer = optim.AdamW(model.parameters(), lr=args.lr)
   args.scheduler = optim.lr_scheduler.ReduceLROnPlateau(args.optimizer, 'max', patience=args.lr_patience, verbose=True, factor=args.lr_factor)
   torch.save(args, os.path.join(args.savedir_multimodal, 'args.pt'))
-  model_train(model, args, criterion, args.savedir_multimodal)
+  model_train(model, args, args.savedir_multimodal)
   load_checkpoint(model, os.path.join(args.savedir_multimodal, 'model_best.pt'))
   model.eval()
-  test_metrics = model_eval(np.inf, test_loader, model, args, criterion)
+  test_metrics = model_eval(np.inf, args.test_loader, model, args)
   print('{}: Loss: {:.5f} | Macro F1 {:.5f}'.format('Test', test_metrics['loss'], test_metrics['macro_f1']))
   model_type.append('multimodel')
   params_count.append(params)
@@ -468,10 +469,10 @@ def main(args, dataset_path):
   optimizer = optim.AdamW(model.parameters(), lr=args.lr)
   scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=args.lr_patience, verbose=True, factor=args.lr_factor)
   torch.save(args, os.path.join(args.savedir_text, 'args.pt'))
-  model_train(model, args, criterion, args.savedir_multimodal)
+  model_train(model, args, args.savedir_multimodal)
   load_checkpoint(model, os.path.join(args.savedir_text, 'model_best.pt'))
   model.eval()
-  test_metrics = model_eval(np.inf, test_loader, model, args, criterion)
+  test_metrics = model_eval(np.inf, args.test_loader, model, args)
   print('{}: Loss: {:.5f} | Macro F1 {:.5f}'.format('Test', test_metrics['loss'], test_metrics['macro_f1']))
   model_type.append('text')
   params_count.append(params)
@@ -489,10 +490,10 @@ def main(args, dataset_path):
   optimizer = optim.AdamW(model.parameters(), lr=args.lr)
   scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=args.lr_patience, verbose=True, factor=args.lr_factor)
   torch.save(args, os.path.join(args.savedir_image, 'args.pt'))
-  model_train(model, args, criterion, args.savedir_multimodal)
+  model_train(model, args, args.savedir_multimodal)
   load_checkpoint(model, os.path.join(args.savedir_image, 'model_best.pt'))
   model.eval()
-  test_metrics = model_eval(np.inf, test_loader, model, args, criterion)
+  test_metrics = model_eval(np.inf, args.test_loader, model, args)
   print('{}: Loss: {:.5f} | Macro F1 {:.5f}'.format('Test', test_metrics['loss'], test_metrics['macro_f1']))
   model_type.append('image')
   params_count.append(params)
