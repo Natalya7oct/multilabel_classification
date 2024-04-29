@@ -232,7 +232,10 @@ def model_eval(i_epoch, data, model, args, criterion):
 
     return metrics
 
-def model_train(model, optimizer, train_loader, val_loader, test_loader, args, criterion, savedir):
+def model_train(model, args, criterion, savedir):
+
+  optimizer = args.optimizer
+  scheduler = args.scheduler
 
   start_epoch, global_step, n_no_improve, best_metric = 0, 0, 0, -np.inf
 
@@ -244,7 +247,7 @@ def model_train(model, optimizer, train_loader, val_loader, test_loader, args, c
       model.train()
       optimizer.zero_grad()
 
-      for batch in tqdm(train_loader, total=len(train_loader)):
+      for batch in tqdm(args.train_loader, total=len(train_loader)):
           txt, segment, mask, img, tgt = batch
 
           txt, img = txt.cuda(), img.cuda()
@@ -261,7 +264,7 @@ def model_train(model, optimizer, train_loader, val_loader, test_loader, args, c
               optimizer.zero_grad()
 
       model.eval()
-      metrics = model_eval(i_epoch, val_loader, model, args, criterion)
+      metrics = model_eval(i_epoch, args.val_loader, model, args, criterion)
       epoch_train_losses.append(np.mean(train_losses))
       epoch_val_losses.append(metrics['loss'])
       print('Epoch:', i_epoch)
@@ -295,10 +298,10 @@ def model_train(model, optimizer, train_loader, val_loader, test_loader, args, c
           break
 
 def main(args, dataset_path):
-  train_loader, val_loader, test_loader, args = get_dataloader(dataset_path, args)
+  args.train_loader, args.val_loader, args.test_loader, args = get_dataloader(dataset_path, args)
   freqs = [args.label_freqs[l] for l in args.labels]
   label_weights = (torch.FloatTensor(freqs) / args.train_data_len) ** -1
-  criterion = nn.BCEWithLogitsLoss(pos_weight=label_weights.cuda())
+  args.criterion = nn.BCEWithLogitsLoss(pos_weight=label_weights.cuda())
 
   bert_model = BertModel.from_pretrained(args.bert_type)
   if args.resnet_type == 'resnet152':
@@ -442,10 +445,10 @@ def main(args, dataset_path):
   params = sum([np.prod(p.size()) for p in model_parameters])
   print('Number of parameters: {:.5f} '.format(params))
 
-  optimizer = optim.AdamW(model.parameters(), lr=args.lr)
-  scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=args.lr_patience, verbose=True, factor=args.lr_factor)
+  args.optimizer = optim.AdamW(model.parameters(), lr=args.lr)
+  args.scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=args.lr_patience, verbose=True, factor=args.lr_factor)
   torch.save(args, os.path.join(args.savedir_multimodal, 'args.pt'))
-  model_train(model, optimizer, train_loader, val_loader, test_loader, args, criterion, args.savedir_multimodal)
+  model_train(model, args, criterion, args.savedir_multimodal)
   load_checkpoint(model, os.path.join(args.savedir_multimodal, 'model_best.pt'))
   model.eval()
   test_metrics = model_eval(np.inf, test_loader, model, args, criterion)
@@ -465,7 +468,7 @@ def main(args, dataset_path):
   optimizer = optim.AdamW(model.parameters(), lr=args.lr)
   scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=args.lr_patience, verbose=True, factor=args.lr_factor)
   torch.save(args, os.path.join(args.savedir_text, 'args.pt'))
-  model_train(model, optimizer, train_loader, val_loader, test_loader, args, criterion, args.savedir_multimodal)
+  model_train(model, args, criterion, args.savedir_multimodal)
   load_checkpoint(model, os.path.join(args.savedir_text, 'model_best.pt'))
   model.eval()
   test_metrics = model_eval(np.inf, test_loader, model, args, criterion)
@@ -486,7 +489,7 @@ def main(args, dataset_path):
   optimizer = optim.AdamW(model.parameters(), lr=args.lr)
   scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=args.lr_patience, verbose=True, factor=args.lr_factor)
   torch.save(args, os.path.join(args.savedir_image, 'args.pt'))
-  model_train(model, optimizer, train_loader, val_loader, test_loader, args, criterion, args.savedir_multimodal)
+  model_train(model, args, criterion, args.savedir_multimodal)
   load_checkpoint(model, os.path.join(args.savedir_image, 'model_best.pt'))
   model.eval()
   test_metrics = model_eval(np.inf, test_loader, model, args, criterion)
