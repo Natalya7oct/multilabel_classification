@@ -248,7 +248,7 @@ def model_train(model, args, savedir):
       model.train()
       optimizer.zero_grad()
 
-      for batch in tqdm(args.train_loader, total=len(train_loader)):
+      for batch in tqdm(args.train_loader, total=len(args.train_loader)):
           txt, segment, mask, img, tgt = batch
 
           txt, img = txt.cuda(), img.cuda()
