@@ -434,10 +434,9 @@ def main(args, dataset_path):
 
       def forward(self, txt, mask, segment, img):
           txt = self.txtmodel(txt, mask, segment, img)
-          img = self.imgmodel(txt, mask, segment, img)
-          '''out = (txt+img)/2'''
-          print(txt, img)
-          return txt, img
+          '''img = self.imgmodel(txt, mask, segment, img)
+          out = (txt+img)/2'''
+          return txt
 
 
   model_type = []
