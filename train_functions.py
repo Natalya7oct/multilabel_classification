@@ -429,8 +429,8 @@ def main(args, dataset_path):
       def __init__(self, args):
           super(MultimodalModelAvg, self).__init__()
           self.args = args
-          self.txtmodel = TextModel(args)
-          self.imgmodel = ImgModel(args)
+          self.txtmodel = TextModel(args).cuda()
+          self.imgmodel = ImgModel(args).cuda()
 
       def forward(self, txt, mask, segment, img):
           txt = self.txtmodel(txt, mask, segment, img)
@@ -443,7 +443,7 @@ def main(args, dataset_path):
   params_count = []
   test_f1 = []
 
-  '''
+  
   print('MultimodelAvg model')
   model = MultimodalModelAvg(args).cuda()
 
@@ -462,7 +462,7 @@ def main(args, dataset_path):
   model_type.append('multimodel_avg')
   params_count.append(params)
   test_f1.append(test_metrics['macro_f1'])
-  '''
+  
 
   print('Multimodel model')
   model = MultimodalModel(args).cuda()
