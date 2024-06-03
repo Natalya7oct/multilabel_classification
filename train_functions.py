@@ -443,6 +443,7 @@ def main(args, dataset_path):
   params_count = []
   test_f1 = []
 
+  '''
   print('MultimodelAvg model')
   model = MultimodalModelAvg(args).cuda()
 
@@ -461,7 +462,7 @@ def main(args, dataset_path):
   model_type.append('multimodel_avg')
   params_count.append(params)
   test_f1.append(test_metrics['macro_f1'])
-
+  '''
 
   print('Multimodel model')
   model = MultimodalModel(args).cuda()
