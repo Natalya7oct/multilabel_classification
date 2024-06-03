@@ -425,7 +425,7 @@ def main(args, dataset_path):
               out = layer(out)
           return out
 
- class MultimodalModelAvg(nn.Module):
+  class MultimodalModelAvg(nn.Module):
       def __init__(self, args):
           super(MultimodalModelAvg, self).__init__()
           self.args = args
