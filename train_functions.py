@@ -425,10 +425,42 @@ def main(args, dataset_path):
               out = layer(out)
           return out
 
+ class MultimodalModelAvg(nn.Module):
+      def __init__(self, args):
+          super(MultimodalModelAvg, self).__init__()
+          self.args = args
+          self.txtmodel = TextModel(args)
+          self.imgmodel = ImgModel(args)
+
+      def forward(self, txt, mask, segment, img):
+          txt = self.txtmodel(txt, mask, segment, img)
+          img = self.imgmodel(txt, mask, segment, img)
+          out = (txt+img)/2
+          return out
+
 
   model_type = []
   params_count = []
   test_f1 = []
+
+  print('MultimodelAvg model')
+  model = MultimodalModelAvg(args).cuda()
+
+  model_parameters = filter(lambda p: p.requires_grad, model.parameters())
+  params = sum([np.prod(p.size()) for p in model_parameters])
+  print('Number of parameters: {:.5f} '.format(params))
+
+  args.optimizer = optim.AdamW(model.parameters(), lr=args.lr)
+  args.scheduler = optim.lr_scheduler.ReduceLROnPlateau(args.optimizer, 'max', patience=args.lr_patience, verbose=True, factor=args.lr_factor)
+  torch.save(args, os.path.join(args.savedir_multimodal, 'args.pt'))
+  model_train(model, args, args.savedir_multimodal)
+  load_checkpoint(model, os.path.join(args.savedir_multimodal, 'model_best.pt'))
+  model.eval()
+  test_metrics = model_eval(np.inf, args.test_loader, model, args)
+  print('{}: Loss: {:.5f} | Macro F1 {:.5f}'.format('Test', test_metrics['loss'], test_metrics['macro_f1']))
+  model_type.append('multimodel')
+  params_count.append(params)
+  test_f1.append(test_metrics['macro_f1'])
 
 
   print('Multimodel model')
