@@ -458,7 +458,7 @@ def main(args, dataset_path):
   model.eval()
   test_metrics = model_eval(np.inf, args.test_loader, model, args)
   print('{}: Loss: {:.5f} | Macro F1 {:.5f}'.format('Test', test_metrics['loss'], test_metrics['macro_f1']))
-  model_type.append('multimodel')
+  model_type.append('multimodel_avg')
   params_count.append(params)
   test_f1.append(test_metrics['macro_f1'])
 
