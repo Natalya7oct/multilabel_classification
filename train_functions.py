@@ -436,8 +436,8 @@ def main(args, dataset_path):
           txt_, mask_, segment_, img_ = txt, mask, segment, img
           img = self.imgmodel(txt_, mask_, segment_, img_)
           txt = self.txtmodel(txt, mask, segment, img)
-          out = (txt+img)/2'''
-          return img
+          out = (txt+img)/2
+          return out
 
 
   model_type = []
