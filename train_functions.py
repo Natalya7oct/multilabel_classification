@@ -433,9 +433,10 @@ def main(args, dataset_path):
           self.imgmodel = ImgModel(args).cuda()
 
       def forward(self, txt, mask, segment, img):
-          txt_, mask_, segment_, img_ = txt, mask, segment, img
-          img = self.imgmodel(txt_, mask_, segment_, img_)
-          txt = self.txtmodel(txt, mask, segment, img)
+          txt_i, mask_i, segment_i, img_i = txt, mask, segment, img
+          txt_t, mask_t, segment_t, img_t = txt, mask, segment, img
+          img = self.imgmodel(txt_i, mask_i, segment_i, img_i)
+          txt = self.txtmodel(txt_t, mask_t, segment_t, img_t)
           out = (txt+img)/2
           return out
 
